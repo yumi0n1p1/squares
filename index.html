@@ -12,20 +12,12 @@
       <div class="control-panel">
         <div class="controls">
           <div class="control">
-            <input type="checkbox" id="control-border" checked />
-            <label for="control-border">Square border</label>
+            <input type="checkbox" id="control-guideline-color" checked />
+            <label for="control-guideline-color">Use square color for guide lines</label>
           </div>
           <div class="control">
-            <input type="checkbox" id="control-guideline" checked />
-            <label for="control-guideline">Guide line</label>
-          </div>
-          <div class="control">
-            <input type="checkbox" id="control-cursor" checked />
-            <label for="control-cursor">Bigger cursor</label>
-          </div>
-          <div class="control">
-            <input type="checkbox" id="control-nextsquare" checked />
-            <label for="control-nextsquare">Next square lights up</label>
+            <input type="checkbox" id="control-guideline-dash" checked />
+            <label for="control-guideline-dash">Dashed secondary guideline</label>
           </div>
         </div>
 
@@ -42,7 +34,16 @@
           </div>
           <div class="legend-item legend-active">
             <svg width="20" height="20">
-              <rect class="active-square" width="20" height="20" x="0" y="0" fill="#0f4" />
+              <rect
+                class="active-square"
+                width="20"
+                height="20"
+                x="0"
+                y="0"
+                fill="#0f4"
+                stroke="#f88"
+                stroke-width="3"
+              />
             </svg>
             Click this square
           </div>
@@ -54,19 +55,54 @@
           </div>
           <div class="legend-item legend-guideline">
             <svg width="80" height="20">
-              <line x1="10" y1="10" x2="70" y2="10" stroke="#f88" stroke-width="5" />
+              <line
+                class="guideline primary-guideline"
+                x1="10"
+                y1="10"
+                x2="70"
+                y2="10"
+                stroke="#f88"
+                stroke-width="5"
+              />
               <image x="0" y="0" width="20" height="20" href="src/assets/cursor.png" />
-              <rect class="active-square" width="20" height="20" x="60" y="0" fill="#0f4" />
+              <rect
+                class="active-square"
+                width="20"
+                height="20"
+                x="60"
+                y="0"
+                fill="#0f4"
+                stroke="#f88"
+                stroke-width="3"
+              />
             </svg>
-            Solid red guide line will appear between your cursor and the square you should click.
+            Guide line will appear between your cursor and the square you should click.
           </div>
           <div class="legend-item legend-guideline">
             <svg width="80" height="20">
-              <line x1="10" y1="10" x2="70" y2="10" stroke="#f88" stroke-width="2" stroke-dasharray="4" />
-              <rect class="active-square" width="20" height="20" x="0" y="0" fill="#0f4" />
+              <line
+                class="guideline secondary-guideline"
+                x1="10"
+                y1="10"
+                x2="70"
+                y2="10"
+                stroke="#f88"
+                stroke-width="2"
+                stroke-dasharray="4"
+              />
+              <rect
+                class="active-square"
+                width="20"
+                height="20"
+                x="0"
+                y="0"
+                fill="#0f4"
+                stroke="#f88"
+                stroke-width="3"
+              />
               <rect width="20" height="20" x="60" y="0" fill="#bdc" />
             </svg>
-            Dashed red guide line will appear between the square you should click and the next square.
+            Faded guide line will appear between the square you should click and the next square.
           </div>
         </div>
       </div>

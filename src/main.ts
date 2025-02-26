@@ -8,50 +8,15 @@ const ACTIVE_COLOR = '#0f4'
 const SECONDARY_COLOR = '#bdc'
 const GUIDE_COLOR = '#f88'
 
-const controlBorderEl = document.getElementById('control-border')! as HTMLInputElement
-const controlGuidelineEl = document.getElementById('control-guideline')! as HTMLInputElement
-const controlCursorEl = document.getElementById('control-cursor')! as HTMLInputElement
-const controlNextSquareEl = document.getElementById('control-nextsquare')! as HTMLInputElement
+const controlGuidelineColorEl = document.getElementById('control-guideline-color')! as HTMLInputElement
+const controlGuidelineDashEl = document.getElementById('control-guideline-dash')! as HTMLInputElement
 
-let squareBorder = false
-let showGuideLine = controlGuidelineEl.checked
-let biggerCursor = controlCursorEl.checked
-let nextSquareLightsUp = controlNextSquareEl.checked
-
-function updateBorder() {
-  squareBorder = controlBorderEl.checked
-  Array.from(document.getElementsByClassName('active-square')).map(el => {
-    el.setAttribute('stroke', squareBorder ? GUIDE_COLOR : 'none')
-    el.setAttribute('stroke-width', squareBorder ? '3' : '0')
-  })
-}
-
-updateBorder()
-controlBorderEl.addEventListener('change', updateBorder)
-
-function updateGuideLine() {
-  showGuideLine = controlGuidelineEl.checked
-  Array.from(document.getElementsByClassName('legend-guideline')).map(el => {
-    ;(el as HTMLElement).style.display = showGuideLine ? 'block' : 'none'
-  })
-}
-
-updateGuideLine()
-controlGuidelineEl.addEventListener('change', updateGuideLine)
-
-controlCursorEl.addEventListener('change', () => {
-  biggerCursor = controlCursorEl.checked
-})
-
-function updateNextSquare() {
-  nextSquareLightsUp = controlNextSquareEl.checked
-  ;(document.getElementsByClassName('legend-nextsquare')[0] as HTMLElement).style.display = nextSquareLightsUp
-    ? 'block'
-    : 'none'
-}
-
-updateNextSquare()
-controlNextSquareEl.addEventListener('change', updateNextSquare)
+let guidelineSameColorAsSquares = true
+let secondaryGuidelineDashed = true
+const biggerCursor = true
+const showGuideLine = true
+const nextSquareLightsUp = true
+const squareBorder = true
 
 let svg = SVG().addTo('#canvas').size(canvasSize, canvasSize)
 let targets: Rect[] = []
@@ -67,6 +32,38 @@ let lineToNextTarget: Line = svg.line(0, 0, 0, 0).stroke({
   width: 2,
   dasharray: '4',
 })
+
+function updateGuidelineColor() {
+  guidelineSameColorAsSquares = controlGuidelineColorEl.checked
+  if (guidelineSameColorAsSquares) {
+    document.getElementsByClassName('primary-guideline')[0].setAttribute('stroke', ACTIVE_COLOR)
+    document.getElementsByClassName('secondary-guideline')[0].setAttribute('stroke', SECONDARY_COLOR)
+    lineToCurrentTarget.stroke({ color: ACTIVE_COLOR })
+    lineToNextTarget.stroke({ color: SECONDARY_COLOR })
+  } else {
+    document.getElementsByClassName('primary-guideline')[0].setAttribute('stroke', GUIDE_COLOR)
+    document.getElementsByClassName('secondary-guideline')[0].setAttribute('stroke', GUIDE_COLOR)
+    lineToCurrentTarget.stroke({ color: GUIDE_COLOR })
+    lineToNextTarget.stroke({ color: GUIDE_COLOR })
+  }
+}
+
+updateGuidelineColor()
+controlGuidelineColorEl.addEventListener('change', updateGuidelineColor)
+
+function updateGuidelineDash() {
+  secondaryGuidelineDashed = controlGuidelineDashEl.checked
+  if (secondaryGuidelineDashed) {
+    document.getElementsByClassName('secondary-guideline')[0].setAttribute('stroke-dasharray', '4')
+    lineToNextTarget.stroke({ dasharray: '4' })
+  } else {
+    document.getElementsByClassName('secondary-guideline')[0].removeAttribute('stroke-dasharray')
+    lineToNextTarget.stroke({ dasharray: '0' })
+  }
+}
+
+updateGuidelineDash()
+controlGuidelineDashEl.addEventListener('change', updateGuidelineDash)
 
 function toCenter(x: number): number {
   return x + buttonSize / 2
