@@ -1,38 +1,57 @@
 import './style.css'
 import { Line, Rect, SVG } from '@svgdotjs/svg.js'
 
-const tasksLength = 10
+const TASKS_LENGTH = 10
 
-const inactiveColor = '#ccc'
-const activeColor = '#0f4'
-const secondaryColor = '#bdc'
-const guideColor = '#f88'
+const INACTIVE_COLOR = '#ccc'
+const ACTIVE_COLOR = '#0f4'
+const SECONDARY_COLOR = '#bdc'
+const GUIDE_COLOR = '#f88'
 
-let controlBorderEl = document.getElementById('control-border')! as HTMLInputElement
-let controlGuidelineEl = document.getElementById('control-guideline')! as HTMLInputElement
-let controlCursorEl = document.getElementById('control-cursor')! as HTMLInputElement
-let controlNextSquareEl = document.getElementById('control-nextsquare')! as HTMLInputElement
+const controlBorderEl = document.getElementById('control-border')! as HTMLInputElement
+const controlGuidelineEl = document.getElementById('control-guideline')! as HTMLInputElement
+const controlCursorEl = document.getElementById('control-cursor')! as HTMLInputElement
+const controlNextSquareEl = document.getElementById('control-nextsquare')! as HTMLInputElement
 
-let squareBorder = controlBorderEl.checked
+let squareBorder = false
 let showGuideLine = controlGuidelineEl.checked
 let biggerCursor = controlCursorEl.checked
 let nextSquareLightsUp = controlNextSquareEl.checked
 
-controlBorderEl.addEventListener('change', e => {
-  squareBorder = (e.target! as HTMLInputElement).checked
+function updateBorder() {
+  squareBorder = controlBorderEl.checked
+  Array.from(document.getElementsByClassName('active-square')).map(el => {
+    el.setAttribute('stroke', squareBorder ? GUIDE_COLOR : 'none')
+    el.setAttribute('stroke-width', squareBorder ? '3' : '0')
+  })
+}
+
+updateBorder()
+controlBorderEl.addEventListener('change', updateBorder)
+
+function updateGuideLine() {
+  showGuideLine = controlGuidelineEl.checked
+  Array.from(document.getElementsByClassName('legend-guideline')).map(el => {
+    ;(el as HTMLElement).style.display = showGuideLine ? 'block' : 'none'
+  })
+}
+
+updateGuideLine()
+controlGuidelineEl.addEventListener('change', updateGuideLine)
+
+controlCursorEl.addEventListener('change', () => {
+  biggerCursor = controlCursorEl.checked
 })
 
-controlGuidelineEl.addEventListener('change', e => {
-  showGuideLine = (e.target! as HTMLInputElement).checked
-})
+function updateNextSquare() {
+  nextSquareLightsUp = controlNextSquareEl.checked
+  ;(document.getElementsByClassName('legend-nextsquare')[0] as HTMLElement).style.display = nextSquareLightsUp
+    ? 'block'
+    : 'none'
+}
 
-controlCursorEl.addEventListener('change', e => {
-  biggerCursor = (e.target! as HTMLInputElement).checked
-})
-
-controlNextSquareEl.addEventListener('change', e => {
-  nextSquareLightsUp = (e.target! as HTMLInputElement).checked
-})
+updateNextSquare()
+controlNextSquareEl.addEventListener('change', updateNextSquare)
 
 let svg = SVG().addTo('#canvas').size(canvasSize, canvasSize)
 let targets: Rect[] = []
@@ -40,11 +59,11 @@ let currentTarget: number | undefined
 let nextTarget: number | undefined
 
 let lineToCurrentTarget: Line = svg.line(0, 0, 0, 0).stroke({
-  color: guideColor,
+  color: GUIDE_COLOR,
   width: 5,
 })
 let lineToNextTarget: Line = svg.line(0, 0, 0, 0).stroke({
-  color: guideColor,
+  color: GUIDE_COLOR,
   width: 2,
   dasharray: '4',
 })
@@ -59,11 +78,11 @@ for (let i = 0; i < numberOfSquaresTall * numberOfSquaresWide; i++) {
   let x = (i % numberOfSquaresWide) * (padding + buttonSize) + margin
   let y = Math.floor(i / numberOfSquaresTall) * (padding + buttonSize) + margin
 
-  let square = svg.rect(buttonSize, buttonSize).move(x, y).fill(inactiveColor)
+  let square = svg.rect(buttonSize, buttonSize).move(x, y).fill(INACTIVE_COLOR)
   targets[i] = square
 }
 
-const judge = new Judge(tasksLength, targets, 'teamName')
+const judge = new Judge(TASKS_LENGTH, targets, 'teamName')
 
 judge.on('start', () => {
   if (biggerCursor) {
@@ -79,12 +98,15 @@ judge.on('start', () => {
     lineToCurrentTarget.hide()
     lineToNextTarget.hide()
   }
+
+  ;(document.getElementsByClassName('legend')[0] as HTMLElement).style.opacity = '0.1'
 })
 
 judge.on('stop', () => {
   for (let i = 0; i < numberOfSquaresTall * numberOfSquaresWide; i++) {
-    targets[i].fill(inactiveColor).stroke({ width: 0 })
+    targets[i].fill(INACTIVE_COLOR).stroke({ width: 0 })
   }
+  ;(document.getElementsByClassName('legend')[0] as HTMLElement).style.opacity = '1'
 })
 
 judge.on('newTask', () => {
@@ -93,19 +115,19 @@ judge.on('newTask', () => {
   ;[currentTarget, nextTarget] = judge.getNextTwoTasks()
 
   for (let i = 0; i < numberOfSquaresTall * numberOfSquaresWide; i++) {
-    targets[i].fill(inactiveColor).stroke({ width: 0 })
+    targets[i].fill(INACTIVE_COLOR).stroke({ width: 0 })
   }
 
   if (currentTarget === undefined) return
 
   console.log('Next: ' + currentTarget)
-  targets[currentTarget].fill(activeColor)
+  targets[currentTarget].fill(ACTIVE_COLOR)
   if (squareBorder) {
-    targets[currentTarget].stroke({ color: guideColor, width: 3 })
+    targets[currentTarget].stroke({ color: GUIDE_COLOR, width: 3 })
   }
 
   if (nextSquareLightsUp && nextTarget !== undefined) {
-    targets[nextTarget].fill(secondaryColor)
+    targets[nextTarget].fill(SECONDARY_COLOR)
   }
 
   if (lastTarget !== undefined) {
