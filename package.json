@@ -14,7 +14,6 @@
   },
   "dependencies": {
     "@svgdotjs/svg.js": "^3.2.4",
-    "svg.js": "^2.7.1",
     "vite-plugin-singlefile": "^2.1.0"
   }
 }

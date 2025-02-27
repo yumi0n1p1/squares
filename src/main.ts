@@ -3,68 +3,30 @@ import { Line, Rect, SVG } from '@svgdotjs/svg.js'
 
 const TASKS_LENGTH = 10
 
-const INACTIVE_COLOR = '#ccc'
-const ACTIVE_COLOR = '#0f4'
-const SECONDARY_COLOR = '#bdc'
-const GUIDE_COLOR = '#f88'
+const INACTIVE_COLOR = '#ccc' // light gray
+const ACTIVE_COLOR = '#0f4' // bright green
+const SECONDARY_COLOR = '#bdc' // grayish green
+const GUIDE_COLOR = '#f88' // bright red
 
-const controlGuidelineColorEl = document.getElementById('control-guideline-color')! as HTMLInputElement
-const controlGuidelineDashEl = document.getElementById('control-guideline-dash')! as HTMLInputElement
+const svg = SVG().addTo('#canvas').size(canvasSize, canvasSize)
+const targets: Rect[] = [] // array of the 16 square elements
 
-let guidelineSameColorAsSquares = true
-let secondaryGuidelineDashed = true
-const biggerCursor = true
-const showGuideLine = true
-const nextSquareLightsUp = true
-const squareBorder = true
+let currentTarget: number | undefined // i.e. the square that the user should click now
+let nextTarget: number | undefined // i.e. the square that the user should clock after currentTarget
 
-let svg = SVG().addTo('#canvas').size(canvasSize, canvasSize)
-let targets: Rect[] = []
-let currentTarget: number | undefined
-let nextTarget: number | undefined
-
-let lineToCurrentTarget: Line = svg.line(0, 0, 0, 0).stroke({
-  color: GUIDE_COLOR,
+// Line between the cursor and the current target
+const lineToCurrentTarget: Line = svg.line(0, 0, 0, 0).stroke({
+  color: ACTIVE_COLOR,
   width: 5,
 })
-let lineToNextTarget: Line = svg.line(0, 0, 0, 0).stroke({
-  color: GUIDE_COLOR,
+// Line between the current and the next target
+const lineToNextTarget: Line = svg.line(0, 0, 0, 0).stroke({
+  color: SECONDARY_COLOR,
   width: 2,
   dasharray: '4',
 })
 
-function updateGuidelineColor() {
-  guidelineSameColorAsSquares = controlGuidelineColorEl.checked
-  if (guidelineSameColorAsSquares) {
-    document.getElementsByClassName('primary-guideline')[0].setAttribute('stroke', ACTIVE_COLOR)
-    document.getElementsByClassName('secondary-guideline')[0].setAttribute('stroke', SECONDARY_COLOR)
-    lineToCurrentTarget.stroke({ color: ACTIVE_COLOR })
-    lineToNextTarget.stroke({ color: SECONDARY_COLOR })
-  } else {
-    document.getElementsByClassName('primary-guideline')[0].setAttribute('stroke', GUIDE_COLOR)
-    document.getElementsByClassName('secondary-guideline')[0].setAttribute('stroke', GUIDE_COLOR)
-    lineToCurrentTarget.stroke({ color: GUIDE_COLOR })
-    lineToNextTarget.stroke({ color: GUIDE_COLOR })
-  }
-}
-
-updateGuidelineColor()
-controlGuidelineColorEl.addEventListener('change', updateGuidelineColor)
-
-function updateGuidelineDash() {
-  secondaryGuidelineDashed = controlGuidelineDashEl.checked
-  if (secondaryGuidelineDashed) {
-    document.getElementsByClassName('secondary-guideline')[0].setAttribute('stroke-dasharray', '4')
-    lineToNextTarget.stroke({ dasharray: '4' })
-  } else {
-    document.getElementsByClassName('secondary-guideline')[0].removeAttribute('stroke-dasharray')
-    lineToNextTarget.stroke({ dasharray: '0' })
-  }
-}
-
-updateGuidelineDash()
-controlGuidelineDashEl.addEventListener('change', updateGuidelineDash)
-
+// Relocate any coordianate on the upper-left corner of a square to its center.
 function toCenter(x: number): number {
   return x + buttonSize / 2
 }
@@ -82,28 +44,21 @@ for (let i = 0; i < numberOfSquaresTall * numberOfSquaresWide; i++) {
 const judge = new Judge(TASKS_LENGTH, targets, 'teamName')
 
 judge.on('start', () => {
-  if (biggerCursor) {
-    document.body.classList.add('bigger-cursor')
-  } else {
-    document.body.classList.remove('bigger-cursor')
-  }
+  lineToCurrentTarget.show()
+  lineToNextTarget.show()
 
-  if (showGuideLine) {
-    lineToCurrentTarget.show()
-    lineToNextTarget.show()
-  } else {
-    lineToCurrentTarget.hide()
-    lineToNextTarget.hide()
-  }
-
-  ;(document.getElementsByClassName('legend')[0] as HTMLElement).style.opacity = '0.1'
+  document.getElementById('legend')!.style.opacity = '0.1' // Hide the legend
 })
 
 judge.on('stop', () => {
   for (let i = 0; i < numberOfSquaresTall * numberOfSquaresWide; i++) {
     targets[i].fill(INACTIVE_COLOR).stroke({ width: 0 })
   }
-  ;(document.getElementsByClassName('legend')[0] as HTMLElement).style.opacity = '1'
+
+  lineToCurrentTarget.hide()
+  lineToNextTarget.hide()
+
+  document.getElementById('legend')!.style.opacity = '1' // Show the legend
 })
 
 judge.on('newTask', () => {
@@ -111,22 +66,18 @@ judge.on('newTask', () => {
 
   ;[currentTarget, nextTarget] = judge.getNextTwoTasks()
 
+  // Make all squares inactive first
   for (let i = 0; i < numberOfSquaresTall * numberOfSquaresWide; i++) {
     targets[i].fill(INACTIVE_COLOR).stroke({ width: 0 })
   }
 
   if (currentTarget === undefined) return
 
-  console.log('Next: ' + currentTarget)
+  // Mark the active square
   targets[currentTarget].fill(ACTIVE_COLOR)
-  if (squareBorder) {
-    targets[currentTarget].stroke({ color: GUIDE_COLOR, width: 3 })
-  }
+  targets[currentTarget].stroke({ color: GUIDE_COLOR, width: 3 })
 
-  if (nextSquareLightsUp && nextTarget !== undefined) {
-    targets[nextTarget].fill(SECONDARY_COLOR)
-  }
-
+  // Plot a line from the last target to the current target
   if (lastTarget !== undefined) {
     lineToCurrentTarget.plot(
       toCenter(Number(targets[lastTarget].x())),
@@ -136,7 +87,10 @@ judge.on('newTask', () => {
     )
   }
 
+  // Mark the next target if there is one
   if (nextTarget !== undefined) {
+    targets[nextTarget].fill(SECONDARY_COLOR)
+
     lineToNextTarget.plot(
       toCenter(Number(targets[currentTarget].x())),
       toCenter(Number(targets[currentTarget].y())),
@@ -149,6 +103,7 @@ judge.on('newTask', () => {
 svg.mousemove(e => {
   if (currentTarget === undefined) return
 
+  // Update the guide line from the cursor to the current target
   lineToCurrentTarget.plot(
     e.offsetX,
     e.offsetY,

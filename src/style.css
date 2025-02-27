@@ -3,19 +3,17 @@ body {
   height: 100vh;
   padding: 0 10px;
   font-size: 16px;
+  /* Large & more visible cursor */
+  cursor: url(/src/assets/cursor.png) 3 2, auto;
 }
 
-.control-panel {
+#app {
   display: flex;
-  flex-direction: row;
-  gap: 10px;
+  align-items: center;
 }
 
-.control {
-  margin: 5px 0;
-}
-
-.legend {
+#legend {
+  /* Make the fading out of the legend less jarring */
   transition: 0.1s ease;
 }
 
@@ -37,12 +35,9 @@ body {
   margin: 5px 0;
 }
 
-.bigger-cursor {
-  cursor: url(/src/assets/cursor.png) 3 2, auto !important;
-}
-
 footer {
   display: flex;
+  align-items: center;
   gap: 10px;
 }
 
